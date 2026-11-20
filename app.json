@@ -54,6 +54,17 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "backgroundColor": "#f6f0e4"
+    "backgroundColor": "#f6f0e4",
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "1b193fb4-a334-4ae6-ad44-9ee87aa7af9d"
+      }
+    },
+    "owner": "anasalnaas"
   }
 }
