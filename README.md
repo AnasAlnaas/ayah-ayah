@@ -1,56 +1,64 @@
-# Welcome to your Expo app 👋
+# آية آية (Ayah Ayah)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The Qur'an as a vertical feed: one ayah per screen, swipe up for the next. Tap an ayah for Tafsir al-Muyassar under it; long-press to bookmark, copy or share it as an image. Works offline, remembers where you stopped, and runs on iOS, Android and the web from one Expo codebase.
 
-## Get started
+The plan, decisions and roadmap are in [PLAN.md](PLAN.md).
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Run it
 
 ```bash
-npm run reset-project
+npm install
+npx expo start          # then press w for the browser, or scan the QR code with Expo Go
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+- **Phone:** install Expo Go, scan the QR code from `npx expo start`. Everything in v1 runs in Expo Go.
+- **Browser:** `npm run web`. Wheel, arrow keys, Space/Page Down and touch all move one card at a time.
 
-### Other setup steps
+## Checks
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm test                # data integrity, splitting, feed, Arabic helpers
+npm run typecheck
+npx expo lint
+```
 
-## Learn more
+## The Qur'an text and tafsir
 
-To learn more about developing your project with Expo, look at the following resources:
+The text is Tanzil's Uthmani script (Hafs), copied verbatim. Tafsir al-Muyassar (King Fahd Complex) also comes from Tanzil, whose terms allow it for non-commercial use only. The source files are pinned in `data-src/tanzil/` (see its README for URLs, options and checksums). `assets/data/quran.json` and `assets/data/tafsir-muyassar.json` are generated from them:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run build:data
+```
 
-## Join the community
+The build stops if anything is off: surah or ayah counts, basmala placement, sajdah signs, or a changed source file. The tests also confirm that every ayah in the app matches the XML character for character. Never edit the text by hand.
 
-Join our community of developers creating universal apps.
+## How it's built
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+| Path | What |
+| --- | --- |
+| `src/app/` | Routes: home (`index`), the reader (`read`), the index sheet (`navigate`), `tafsir`, `settings`, `about` |
+| `src/screens/home/` | Home: continue reading, progress, shortcuts, ayah of the day |
+| `src/screens/reader/` | The feed, cards, tafsir panel, long-press menu, top bar, progress rail, text fitting, web paging |
+| `src/screens/navigate/` | Surah list, juz list, bookmarks, go-to form |
+| `src/components/share-card.tsx` | The share image (drawn on a canvas on the web: `src/utils/share-image.web.ts`) |
+| `src/feed/build-feed.ts` | Turns the Qur'an into the list of cards |
+| `src/utils/split-ayah.ts` | Splits very long ayahs across cards, preferably at pause marks |
+| `src/store/app-store.ts` | Settings, reading position and bookmarks, saved on the device |
+| `src/data/tafsir.ts` | Loads Tafsir al-Muyassar on first use |
+| `src/theme.ts` | Colours, fonts, sizes |
+
+Long ayahs first shrink to fit (down to 65% of the chosen size). If that is still not enough, the ayah continues on the next card, the way a mushaf continues on the next page. Cuts fall between words, preferably after a pause mark, never after ۙ, and the parts rejoin to the exact original text.
+
+## Release
+
+Builds run in Expo's cloud, so no Mac is needed for iOS.
+
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest init                 # links the project to your Expo account
+npx eas-cli@latest build -p android --profile preview      # installable APK for testing
+npx eas-cli@latest build -p ios --profile production       # then: eas submit -p ios
+npx expo export -p web                  # static site in dist/, host anywhere
+```
+
+Before publishing, change `ios.bundleIdentifier` and `android.package` in `app.json` (currently `com.ayahayah.app`) to identifiers you own.
