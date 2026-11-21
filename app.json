@@ -9,13 +9,13 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ayahayah.app",
+      "bundleIdentifier": "com.anasalnaas.ayahayah",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.ayahayah.app",
+      "package": "com.anasalnaas.ayahayah",
       "adaptiveIcon": {
         "backgroundColor": "#f6f0e4",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

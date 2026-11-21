@@ -91,6 +91,20 @@ export function CompassIcon({ size = 22, color }: IconProps) {
   );
 }
 
+export function FlameIcon({ size = 22, color, filled = false }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24">
+      <Path
+        d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.3-5.4 3.6-7.6.5 1.6 1.4 2.6 2.4 3 0-3.2 1.6-5.7 3.6-7.2-.3 2.9 1 4.9 2.3 6.6 1 1.4 1.6 2.9 1.6 4.9 0 3.9-3 6.5-7 6.5z"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinejoin="round"
+        fill={filled ? color : 'none'}
+      />
+    </Svg>
+  );
+}
+
 /** Points left: "forward" in a right-to-left interface. */
 export function ArrowForwardIcon({ size = 22, color }: IconProps) {
   return (

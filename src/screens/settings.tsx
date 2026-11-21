@@ -11,6 +11,8 @@ import { AYAH_FONT_SIZE, AYAH_LINE_HEIGHT, FONT_SCALES, fonts, useTheme } from '
 import { formatNumber } from '@/utils/arabic';
 import { ALIGN_START, ROW } from '@/utils/rtl';
 
+const GOALS = [5, 10, 20, 50, 100];
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const palette = useTheme();
   return (
@@ -48,7 +50,7 @@ function ToggleRow({ label, value, onChange }: { label: string; value: boolean; 
 export function Settings() {
   const palette = useTheme();
   const insets = useSafeAreaInsets();
-  const { fontScale, theme, numerals, keepAwake, haptics, set } = useAppStore();
+  const { fontScale, theme, numerals, keepAwake, haptics, dailyGoal, set } = useAppStore();
 
   const scaleIndex = Math.max(0, FONT_SCALES.indexOf(fontScale as (typeof FONT_SCALES)[number]));
   const changeSize = (step: number) => {
@@ -95,6 +97,20 @@ export function Settings() {
                 writingDirection: 'rtl',
               }}>
               {getSurah(1).ayahs[1]}
+            </Text>
+          </View>
+        </Section>
+
+        <Section title="الوِرد اليومي">
+          <View style={styles.padded}>
+            <Segmented
+              accessibilityLabel="عدد الآيات في اليوم"
+              value={String(dailyGoal)}
+              onChange={(v) => set({ dailyGoal: Number(v) })}
+              options={GOALS.map((g) => ({ value: String(g), label: formatNumber(g, numerals), accessibilityLabel: `${g} آية في اليوم` }))}
+            />
+            <Text style={[styles.hint, { color: palette.muted }]}>
+              آية في اليوم. تُحسب الآية بعد ثلاث ثوانٍ على الشاشة، ويُتجاوَز عن يوم واحد في الأسبوع دون أن تنقطع السلسلة.
             </Text>
           </View>
         </Section>
@@ -181,6 +197,13 @@ const styles = StyleSheet.create({
   },
   padded: {
     padding: 12,
+    gap: 10,
+  },
+  hint: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 20,
+    writingDirection: 'rtl',
   },
   row: {
     flexDirection: ROW,
