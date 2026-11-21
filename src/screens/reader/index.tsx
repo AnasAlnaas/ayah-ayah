@@ -16,7 +16,7 @@ import { Easing, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Toast, useToast } from '@/components/toast';
-import { getSurah, juzOf } from '@/data/quran';
+import { getSurah, globalAyahIndex, juzOf } from '@/data/quran';
 import { loadTafsir, tafsirFor, useTafsir } from '@/data/tafsir';
 import {
   type AyahItem,
@@ -41,6 +41,8 @@ import { TopBar } from './top-bar';
 import { useWebPager } from './use-web-pager';
 
 const isWeb = Platform.OS === 'web';
+/** Time an ayah must stay on screen to count as read. */
+const READ_AFTER_MS = 3000;
 const OPEN_TIMING = { duration: 560, easing: Easing.bezier(0.22, 1, 0.36, 1) };
 const CLOSE_TIMING = { duration: 420, easing: Easing.bezier(0.22, 1, 0.36, 1) };
 
@@ -91,6 +93,7 @@ function FeedView({ layout, feed }: { layout: CardLayout; feed: Feed }) {
   const tafsirData = useTafsir();
   const isFocused = useIsFocused();
   const toast = useToast();
+  const { show: showToast } = toast;
 
   // Open where the reader last stopped.
   const [initialIndex] = useState(() => indexOfPosition(feed, useAppStore.getState().position));
@@ -108,6 +111,20 @@ function FeedView({ layout, feed }: { layout: CardLayout; feed: Feed }) {
     const timer = setTimeout(() => loadTafsir().catch(() => {}), 1200);
     return () => clearTimeout(timer);
   }, []);
+
+  // An ayah counts towards today's goal after 3 seconds on screen.
+  useEffect(() => {
+    const item = feed.items[activeIndex];
+    if (!item || item.kind !== 'ayah' || !isFocused) return;
+    const timer = setTimeout(() => {
+      const completed = useAppStore.getState().recordRead(globalAyahIndex(item.s, item.a));
+      if (completed) {
+        showToast('ما شاء الله، أتممت وِرد اليوم');
+        if (haptics && !isWeb) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+    }, READ_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, [activeIndex, feed, isFocused, haptics, showToast]);
 
   // The glide between reading and tafsir.
   useEffect(() => {
@@ -186,7 +203,6 @@ function FeedView({ layout, feed }: { layout: CardLayout; feed: Feed }) {
     [haptics],
   );
 
-  const { show: showToast } = toast;
   const toggleBookmark = useCallback(
     (item: AyahItem) => {
       const now = useAppStore.getState().toggleBookmark(item.s, item.a);

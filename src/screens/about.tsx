@@ -72,6 +72,7 @@ export function About() {
           <Text style={body}>
             لا يجمع التطبيق أي بيانات، ولا يحتاج إلى حساب أو اتصال بالإنترنت. موضع قراءتك وإعداداتك والآيات المحفوظة كلها على جهازك فقط.
           </Text>
+          <Link url="https://anasalnaas.github.io/ayah-ayah/privacy-policy" label="سياسة الخصوصية" />
         </Block>
       </ScrollView>
     </View>

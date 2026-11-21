@@ -6,6 +6,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { clampPosition } from '@/data/quran';
 import type { Position } from '@/feed/build-feed';
 import type { Numerals } from '@/utils/arabic';
+import { dayNumber, type DayLog, pruneLog } from '@/utils/streak';
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
 
@@ -23,6 +24,12 @@ type Persisted = {
   hintSeen: boolean;
   /** Newest first */
   bookmarks: Bookmark[];
+  /** Ayahs to read each day */
+  dailyGoal: number;
+  /** Ayahs read per local day number */
+  readLog: DayLog;
+  /** Today's day number and the global ayah indices already counted today */
+  readToday: { day: number; ayahs: number[] };
 };
 
 type Transient = {
@@ -40,6 +47,8 @@ type Actions = {
   /** Returns true when the ayah is now bookmarked */
   toggleBookmark: (s: number, a: number) => boolean;
   removeBookmark: (s: number, a: number) => void;
+  /** Counts an ayah as read today (once per day). Returns true when this read completes the goal. */
+  recordRead: (globalIndex: number) => boolean;
 };
 
 export type AppState = Persisted & Transient & Actions;
@@ -53,6 +62,9 @@ export const DEFAULTS: Persisted = {
   position: { s: 1, a: 0 },
   hintSeen: false,
   bookmarks: [],
+  dailyGoal: 20,
+  readLog: {},
+  readToday: { day: 0, ayahs: [] },
 };
 
 export const useAppStore = create<AppState>()(
@@ -79,12 +91,24 @@ export const useAppStore = create<AppState>()(
         return true;
       },
       removeBookmark: (s, a) => set({ bookmarks: get().bookmarks.filter((b) => !(b.s === s && b.a === a)) }),
+      recordRead: (globalIndex) => {
+        const { readToday, readLog, dailyGoal } = get();
+        const day = dayNumber();
+        const ayahs = readToday.day === day ? readToday.ayahs : [];
+        if (ayahs.includes(globalIndex)) return false;
+        const count = ayahs.length + 1;
+        set({
+          readToday: { day, ayahs: [...ayahs, globalIndex] },
+          readLog: pruneLog({ ...readLog, [day]: count }, day),
+        });
+        return count === dailyGoal;
+      },
     }),
     {
       name: 'ayah-ayah',
       version: 1,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ fontScale, theme, numerals, keepAwake, haptics, position, hintSeen, bookmarks }) => ({
+      partialize: ({ fontScale, theme, numerals, keepAwake, haptics, position, hintSeen, bookmarks, dailyGoal, readLog, readToday }) => ({
         fontScale,
         theme,
         numerals,
@@ -93,6 +117,9 @@ export const useAppStore = create<AppState>()(
         position,
         hintSeen,
         bookmarks,
+        dailyGoal,
+        readLog,
+        readToday,
       }),
       merge: (saved, current) => {
         const state = { ...current, ...(saved as Partial<Persisted>) };

@@ -12,6 +12,8 @@ import { formatNumber } from '@/utils/arabic';
 import { ayahOfTheDay } from '@/utils/ayah-of-the-day';
 import { ALIGN_START, physicalLeft, ROW } from '@/utils/rtl';
 
+import { DailyCard } from './daily-card';
+
 type Tab = 'surahs' | 'juz' | 'bookmarks' | 'goto';
 
 function openIndex(tab: Tab) {
@@ -106,6 +108,8 @@ export function Home() {
             </Text>
           </Pressable>
         </Animated.View>
+
+        <DailyCard />
 
         <View style={styles.progress} accessible accessibilityLabel={`موضعك ${percent}٪ من المصحف، الجزء ${juz}`}>
           <View style={styles.progressText}>
