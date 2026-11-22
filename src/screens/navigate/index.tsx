@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Segmented } from '@/components/segmented';
 import { SheetFrame } from '@/components/sheet-frame';
-import { globalAyahIndex, TOTAL_AYAHS } from '@/data/quran';
+import { globalAyahIndex, totalAyahs } from '@/data/quran';
 import type { Position } from '@/feed/build-feed';
 import { useAppStore } from '@/store/app-store';
 import { fonts, useTheme } from '@/theme';
@@ -46,7 +46,7 @@ export function NavigateSheet() {
     router.push('/settings');
   };
 
-  const percent = Math.floor((globalAyahIndex(position.s, position.a) / TOTAL_AYAHS) * 100);
+  const percent = Math.floor((globalAyahIndex(position.s, position.a) / totalAyahs()) * 100);
 
   return (
     <SheetFrame onClose={close}>

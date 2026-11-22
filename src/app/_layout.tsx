@@ -8,6 +8,7 @@ import * as SystemUI from 'expo-system-ui';
 import { type ComponentProps, useEffect, useSyncExternalStore } from 'react';
 import { Platform } from 'react-native';
 
+import { Welcome } from '@/components/welcome';
 import { useAppStore } from '@/store/app-store';
 import { type Palette, useTheme } from '@/theme';
 
@@ -42,6 +43,7 @@ function navigationTheme(palette: Palette) {
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     AmiriQuran_400Regular,
+    KFGQPC_Qaloon: require('@/assets/fonts/qaloon.10.ttf'),
     NotoNaskhArabic_400Regular,
     NotoNaskhArabic_600SemiBold,
   });
@@ -86,6 +88,7 @@ export default function RootLayout() {
         <Stack.Screen name="settings" />
         <Stack.Screen name="about" />
       </Stack>
+      <Welcome />
     </ThemeProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { globalAyahIndex } from './quran';
+import { hafsGlobalIndex, hafsRange } from './quran';
 
 export type TafsirData = {
   source: {
@@ -47,6 +47,10 @@ export function useTafsir(): TafsirData | null {
   return data;
 }
 
+/** Tafsir al-Muyassar follows the Hafs count; a Qalun ayah that spans several Hafs ayahs gets all of them. */
 export function tafsirFor(data: TafsirData, s: number, a: number): string {
-  return data.ayahs[globalAyahIndex(s, a)] ?? '';
+  const [first, last] = hafsRange(s, a);
+  const parts: string[] = [];
+  for (let h = first; h <= last; h++) parts.push(data.ayahs[hafsGlobalIndex(s, h)] ?? '');
+  return parts.filter(Boolean).join('\n\n');
 }

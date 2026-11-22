@@ -4,7 +4,7 @@ import { BookmarkIcon } from '@/components/icons';
 import { getSurah } from '@/data/quran';
 import type { Position } from '@/feed/build-feed';
 import { type Bookmark, useAppStore } from '@/store/app-store';
-import { fonts, useTheme } from '@/theme';
+import { fonts, useTheme, quranFont } from '@/theme';
 import { formatNumber, type Numerals } from '@/utils/arabic';
 import { ALIGN_START, ROW } from '@/utils/rtl';
 
@@ -40,7 +40,7 @@ export function BookmarkList({ numerals, onSelect }: Props) {
           accessibilityLabel={`${ref}: ${surah.ayahs[item.a - 1]}`}
           style={({ pressed }) => [styles.main, pressed && { opacity: 0.7 }]}>
           <Text style={[styles.ref, { color: palette.goldDeep }]}>{ref}</Text>
-          <Text numberOfLines={1} style={[styles.preview, { color: palette.ink }]}>
+          <Text numberOfLines={1} style={[styles.preview, { fontFamily: quranFont() }, { color: palette.ink }]}>
             {surah.ayahs[item.a - 1]}
           </Text>
         </Pressable>

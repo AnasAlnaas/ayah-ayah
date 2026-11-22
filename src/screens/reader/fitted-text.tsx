@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { type LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 
-import { fonts } from '@/theme';
+import { fonts, quranFont } from '@/theme';
 import { estimateTextHeight, type TextBox } from '@/utils/split-ayah';
 
 import { lineHeightRatio } from './card-layout';
@@ -67,6 +67,7 @@ export function FittedText({ text, cacheKey, box, baseFont, color, minScale = HA
       <Text
         style={[
           styles.text,
+          { fontFamily: quranFont() },
           { color, fontSize: size, lineHeight: Math.round(size * ratio), opacity: ready ? 1 : 0 },
         ]}>
         {text}

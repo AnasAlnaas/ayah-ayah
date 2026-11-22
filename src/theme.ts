@@ -1,3 +1,4 @@
+import { activeRiwayah } from '@/data/quran';
 import { useColorScheme } from 'react-native';
 
 import { useAppStore } from '@/store/app-store';
@@ -55,6 +56,7 @@ export const palettes: Record<'light' | 'dark', Palette> = {
 
 export const fonts = {
   quran: 'AmiriQuran_400Regular',
+  qalun: 'KFGQPC_Qaloon',
   ui: 'NotoNaskhArabic_400Regular',
   uiBold: 'NotoNaskhArabic_600SemiBold',
 } as const;
@@ -75,4 +77,9 @@ export function useTheme(): Palette {
   const setting = useAppStore((s) => s.theme);
   const scheme = setting === 'system' ? (system === 'dark' ? 'dark' : 'light') : setting;
   return palettes[scheme];
+}
+
+/** Font for the mushaf text: Amiri Quran for Hafs, the King Fahd Complex's Qaloon font for Qalun. */
+export function quranFont(): string {
+  return activeRiwayah() === 'qalun' ? fonts.qalun : fonts.quran;
 }

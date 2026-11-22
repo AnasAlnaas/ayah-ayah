@@ -1,6 +1,6 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { getSurah, juzOf, quran } from '@/data/quran';
+import { getSurah, juzOf, quranText } from '@/data/quran';
 import type { Position } from '@/feed/build-feed';
 import { fonts, useTheme } from '@/theme';
 import { formatNumber, type Numerals } from '@/utils/arabic';
@@ -17,7 +17,7 @@ type Props = {
 export function JuzList({ position, numerals, onSelect }: Props) {
   const palette = useTheme();
   const currentJuz = juzOf(position.s, position.a);
-  const data = quran.juz.map(([s, a], i) => ({ juz: i + 1, s, a }));
+  const data = quranText().juz.map(([s, a], i) => ({ juz: i + 1, s, a }));
 
   return (
     <FlatList
