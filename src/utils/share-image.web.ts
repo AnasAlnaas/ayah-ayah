@@ -1,6 +1,6 @@
 import { SHARE_CARD_RATIO } from '@/components/share-card';
 import { getSurah } from '@/data/quran';
-import { fonts, palettes } from '@/theme';
+import { fonts, palettes, quranFont } from '@/theme';
 
 import { toArabicDigits } from './arabic';
 import type { ShareImageRequest, ShareResult } from './share-image';
@@ -39,6 +39,7 @@ async function renderCard(s: number, a: number): Promise<Blob> {
   const text = surah.ayahs[a - 1];
   await Promise.all([
     document.fonts.load(`40px ${fonts.quran}`),
+    document.fonts.load(`40px ${quranFont()}`),
     document.fonts.load(`20px ${fonts.ui}`),
   ]);
 
@@ -76,7 +77,7 @@ async function renderCard(s: number, a: number): Promise<Blob> {
   let lines: string[] = [];
   let lineHeight = 0;
   for (; size > 8 * U; size *= 0.95) {
-    ctx.font = `${size}px ${fonts.quran}`;
+    ctx.font = `${size}px ${quranFont()}`;
     lineHeight = size * (size > 22 * U ? 2.2 : 2.0);
     lines = wrap(ctx, text, boxW);
     if (lines.length * lineHeight <= boxH) break;

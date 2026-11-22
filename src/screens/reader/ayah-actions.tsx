@@ -8,7 +8,7 @@ import { BookmarkIcon, CopyIcon, ShareIcon } from '@/components/icons';
 import { ShareCard } from '@/components/share-card';
 import { getSurah } from '@/data/quran';
 import { useAppStore } from '@/store/app-store';
-import { fonts, type Palette } from '@/theme';
+import { fonts, type Palette, quranFont } from '@/theme';
 import { formatNumber, toArabicDigits, type Numerals } from '@/utils/arabic';
 import { ROW } from '@/utils/rtl';
 import { shareAyahImage } from '@/utils/share-image';
@@ -96,7 +96,7 @@ export function AyahActions({ target, palette, numerals, bookmarked, onClose, on
 
           {mode === 'menu' ? (
             <>
-              <Text numberOfLines={2} style={[styles.preview, { color: palette.ink }]}>
+              <Text numberOfLines={2} style={[styles.preview, { fontFamily: quranFont() }, { color: palette.ink }]}>
                 {surah.ayahs[target.a - 1]}
               </Text>
               <View style={[styles.rows, { borderColor: palette.line }]}>

@@ -4,7 +4,7 @@ import path from 'node:path';
 
 import raw from '@/assets/data/tafsir-muyassar.json';
 
-import { getSurah, TOTAL_AYAHS } from './quran';
+import { getSurah, totalAyahs } from './quran';
 import { type TafsirData, tafsirFor } from './tafsir';
 
 const tafsir = raw as unknown as TafsirData;
@@ -12,7 +12,7 @@ const xmlPath = path.join(__dirname, '../../data-src/tanzil/ar.muyassar.xml');
 
 describe('Tafsir al-Muyassar', () => {
   it('has one entry for every ayah', () => {
-    expect(tafsir.ayahs).toHaveLength(TOTAL_AYAHS);
+    expect(tafsir.ayahs).toHaveLength(totalAyahs());
     expect(tafsir.ayahs.every((t) => t.trim().length > 0)).toBe(true);
   });
 

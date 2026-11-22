@@ -5,9 +5,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
 import { Segmented } from '@/components/segmented';
-import { getSurah } from '@/data/quran';
+import { activeRiwayah, getSurah, type Riwayah } from '@/data/quran';
 import { useAppStore } from '@/store/app-store';
-import { AYAH_FONT_SIZE, AYAH_LINE_HEIGHT, FONT_SCALES, fonts, useTheme } from '@/theme';
+import { AYAH_FONT_SIZE, AYAH_LINE_HEIGHT, FONT_SCALES, fonts, useTheme, quranFont } from '@/theme';
 import { formatNumber } from '@/utils/arabic';
 import { ALIGN_START, ROW } from '@/utils/rtl';
 
@@ -50,7 +50,7 @@ function ToggleRow({ label, value, onChange }: { label: string; value: boolean; 
 export function Settings() {
   const palette = useTheme();
   const insets = useSafeAreaInsets();
-  const { fontScale, theme, numerals, keepAwake, haptics, dailyGoal, set } = useAppStore();
+  const { fontScale, theme, numerals, keepAwake, haptics, dailyGoal, riwayah, set, setRiwayah } = useAppStore();
 
   const scaleIndex = Math.max(0, FONT_SCALES.indexOf(fontScale as (typeof FONT_SCALES)[number]));
   const changeSize = (step: number) => {
@@ -64,6 +64,23 @@ export function Settings() {
     <View style={[styles.root, { backgroundColor: palette.bg }]}>
       <ScreenHeader title="الإعدادات" />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
+        <Section title="الرواية">
+          <View style={styles.padded}>
+            <Segmented
+              accessibilityLabel="رواية المصحف"
+              value={riwayah}
+              onChange={(v) => setRiwayah(v as Riwayah)}
+              options={[
+                { value: 'hafs', label: 'حفص عن عاصم' },
+                { value: 'qalun', label: 'قالون عن نافع' },
+              ]}
+            />
+            <Text style={[styles.hint, { color: palette.muted }]}>
+              ينتقل موضع قراءتك والآيات المحفوظة إلى ترقيم الرواية الجديدة. التفسير الميسر مبني على رواية حفص، فيظهر مع قالون تفسير الآيات المقابلة.
+            </Text>
+          </View>
+        </Section>
+
         <Section title="حجم الخط">
           <View style={styles.stepper}>
             <Pressable
@@ -89,14 +106,14 @@ export function Settings() {
           <View style={[styles.preview, { backgroundColor: palette.bg, borderColor: palette.line }]}>
             <Text
               style={{
-                fontFamily: fonts.quran,
+                fontFamily: quranFont(),
                 fontSize: previewSize,
                 lineHeight: Math.round(previewSize * AYAH_LINE_HEIGHT),
                 color: palette.ink,
                 textAlign: 'center',
                 writingDirection: 'rtl',
               }}>
-              {getSurah(1).ayahs[1]}
+              {getSurah(1).ayahs[activeRiwayah() === 'qalun' ? 0 : 1]}
             </Text>
           </View>
         </Section>

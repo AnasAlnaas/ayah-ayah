@@ -4,7 +4,7 @@ import type { SharedValue } from 'react-native-reanimated';
 
 import { getSurah } from '@/data/quran';
 import type { HeaderItem } from '@/feed/build-feed';
-import { fonts, type Palette } from '@/theme';
+import { fonts, type Palette, quranFont } from '@/theme';
 import { ayahCountLabel, revelationLabel, type Numerals } from '@/utils/arabic';
 
 import type { CardLayout } from './card-layout';
@@ -49,6 +49,7 @@ export const SurahCard = memo(function SurahCard({ item, index, active, layout, 
             <Text
               style={[
                 styles.basmala,
+                { fontFamily: quranFont() },
                 { color: palette.ink, fontSize: basmalaSize, lineHeight: Math.round(basmalaSize * 2.1) },
               ]}>
               {surah.basmala}

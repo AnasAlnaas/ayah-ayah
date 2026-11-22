@@ -42,6 +42,7 @@ function navigationTheme(palette: Palette) {
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     AmiriQuran_400Regular,
+    KFGQPC_Qaloon: require('@/assets/fonts/qaloon.10.ttf'),
     NotoNaskhArabic_400Regular,
     NotoNaskhArabic_600SemiBold,
   });

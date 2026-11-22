@@ -5,9 +5,9 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ArrowForwardIcon, BookmarkIcon, CompassIcon, GearIcon, LayersIcon, ListIcon } from '@/components/icons';
-import { getSurah, globalAyahIndex, juzOf, TOTAL_AYAHS } from '@/data/quran';
+import { getSurah, globalAyahIndex, juzOf, totalAyahs } from '@/data/quran';
 import { useAppStore } from '@/store/app-store';
-import { fonts, type Palette, useTheme } from '@/theme';
+import { fonts, type Palette, useTheme, quranFont } from '@/theme';
 import { formatNumber } from '@/utils/arabic';
 import { ayahOfTheDay } from '@/utils/ayah-of-the-day';
 import { ALIGN_START, physicalLeft, ROW } from '@/utils/rtl';
@@ -56,7 +56,7 @@ export function Home() {
   const where =
     position.a === 0 ? `بداية سورة ${surah.name}` : `سورة ${surah.name}، الآية ${formatNumber(position.a, numerals)}`;
   const preview = position.a === 0 ? (surah.basmala ?? surah.ayahs[0]) : surah.ayahs[position.a - 1];
-  const percent = Math.floor((globalAyahIndex(position.s, position.a) / TOTAL_AYAHS) * 100);
+  const percent = Math.floor((globalAyahIndex(position.s, position.a) / totalAyahs()) * 100);
   const juz = juzOf(position.s, position.a);
 
   const daily = ayahOfTheDay();
@@ -103,7 +103,7 @@ export function Home() {
                 <ArrowForwardIcon size={20} color={palette.bg} />
               </View>
             </View>
-            <Text numberOfLines={2} style={[styles.preview, { color: palette.ink }]}>
+            <Text numberOfLines={2} style={[styles.preview, { fontFamily: quranFont() }, { color: palette.ink }]}>
               {preview}
             </Text>
           </Pressable>
@@ -148,7 +148,7 @@ export function Home() {
             <View style={[styles.gem, { borderColor: palette.gold }]} />
             <Text style={[styles.kicker, { color: palette.goldDeep }]}>آية اليوم</Text>
           </View>
-          <Text style={[styles.dailyAyah, { color: palette.ink }]}>{dailySurah.ayahs[daily.a - 1]}</Text>
+          <Text style={[styles.dailyAyah, { fontFamily: quranFont() }, { color: palette.ink }]}>{dailySurah.ayahs[daily.a - 1]}</Text>
           <Text style={[styles.small, styles.dailyRef, { color: palette.muted }]}>
             سورة {dailySurah.name}، الآية {formatNumber(daily.a, numerals)}
           </Text>

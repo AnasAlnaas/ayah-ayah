@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '@/components/screen-header';
-import { quran } from '@/data/quran';
+import { hafsQuran, qalunQuran } from '@/data/quran';
 import { fonts, useTheme } from '@/theme';
 import { ALIGN_START } from '@/utils/rtl';
 
@@ -50,8 +50,17 @@ export function About() {
           <Text style={body}>
             النص القرآني بالرسم العثماني برواية حفص عن عاصم، من مشروع تنزيل (Tanzil Project)، منقول كما هو دون أي تعديل.
           </Text>
-          <Link url={quran.source.url} label="tanzil.net" />
-          <Text style={[styles.notice, { color: palette.muted, borderColor: palette.line }]}>{quran.source.notice}</Text>
+          <Link url={hafsQuran.source.url} label="tanzil.net" />
+          <Text style={[styles.notice, { color: palette.muted, borderColor: palette.line }]}>{hafsQuran.source.notice}</Text>
+        </Block>
+
+        <Block title="رواية قالون">
+          <Text style={body}>
+            نص رواية قالون عن نافع وخطّها من مجمع الملك فهد لطباعة المصحف الشريف (الإصدار العاشر)، والكلمات كما هي دون تعديل. ومقابلة
+            آيات قالون بآيات حفص من مشروع quran-json المبني على موسوعة القرآن (Quranpedia)، برخصة CC BY-SA 4.0.
+          </Text>
+          <Link url={qalunQuran.source.url} label="qurancomplex.gov.sa" />
+          <Link url="https://github.com/risan/quran-json" label="github.com/risan/quran-json" />
         </Block>
 
         <Block title="التفسير">

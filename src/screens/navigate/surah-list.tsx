@@ -1,6 +1,6 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { quran, type Surah } from '@/data/quran';
+import { quranText, type Surah } from '@/data/quran';
 import type { Position } from '@/feed/build-feed';
 import { fonts, useTheme } from '@/theme';
 import { ayahCountLabel, formatNumber, type Numerals, revelationLabel } from '@/utils/arabic';
@@ -45,7 +45,7 @@ export function SurahList({ current, numerals, onSelect }: Props) {
 
   return (
     <FlatList
-      data={quran.surahs}
+      data={quranText().surahs}
       keyExtractor={(s) => String(s.n)}
       renderItem={renderItem}
       getItemLayout={(_, index) => ({ length: ROW_HEIGHT, offset: ROW_HEIGHT * index, index })}

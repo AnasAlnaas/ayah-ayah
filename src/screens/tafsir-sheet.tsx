@@ -8,7 +8,7 @@ import { SheetFrame } from '@/components/sheet-frame';
 import { clampPosition, getSurah } from '@/data/quran';
 import { tafsirFor, useTafsir } from '@/data/tafsir';
 import { bookmarkKey, useAppStore, useBookmarkKeys } from '@/store/app-store';
-import { fonts, useTheme } from '@/theme';
+import { fonts, useTheme, quranFont } from '@/theme';
 import { formatNumber } from '@/utils/arabic';
 import { ALIGN_START, ROW } from '@/utils/rtl';
 
@@ -52,7 +52,7 @@ export function TafsirSheet() {
         <Text style={[styles.reference, { color: palette.goldDeep }]}>
           سورة {surah.name}، الآية {formatNumber(ayah, numerals)}
         </Text>
-        <Text style={[styles.ayah, { color: palette.ink }]}>{surah.ayahs[ayah - 1]}</Text>
+        <Text style={[styles.ayah, { fontFamily: quranFont() }, { color: palette.ink }]}>{surah.ayahs[ayah - 1]}</Text>
         <View style={styles.ornament}>
           <View style={[styles.rule, { backgroundColor: palette.line }]} />
           <View style={[styles.gem, { borderColor: palette.gold }]} />

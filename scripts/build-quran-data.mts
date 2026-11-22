@@ -253,6 +253,109 @@ const tafsirData = {
 writeFileSync(tafsirOutFile, JSON.stringify(tafsirData));
 console.log(`✓ tafsir al-Muyassar: ${tafsir.length} entries → ${path.relative(root, tafsirOutFile)} (${Math.round(Buffer.byteLength(JSON.stringify(tafsirData)) / 1024)} KB)`);
 
+// ---------------------------------------------------------------------------
+// Riwayat Qalun 'an Nafi' (King Fahd Glorious Qur'an Printing Complex, Uthmanic
+// Qaloon data v10), shown in the Complex's own Qaloon font. The words are kept
+// exactly; only whitespace is tidied (no-break spaces become plain spaces, runs
+// of spaces become one) and the trailing ayah number is dropped, since the app
+// draws its own. The Hafs ↔ Qalun ayah mapping comes from risan/quran-json.
+
+const kfgDir = path.join(root, 'data-src', 'kfgqpc');
+const QALUN_PINNED: Record<string, string> = {
+  'QaloonData_v10.json': '18465c40ebeec40a92eb98745c9b89796ac6e31f6e93988883dfb6602faaea95',
+  'risan-qalun.json': 'ece0a2b0efe44d496211c595d0a34f495413bc93f78fba8095a666e2048d1303',
+};
+function readKfg(name: string): string {
+  const buf = readFileSync(path.join(kfgDir, name));
+  const hash = createHash('sha256').update(buf).digest('hex');
+  check(hash === QALUN_PINNED[name], `${name} has changed (sha256 ${hash}). Review it, then update QALUN_PINNED.`);
+  return buf.toString('utf8');
+}
+
+const QALUN_TOTAL = 6214;
+const ARABIC_DIGITS = '٠١٢٣٤٥٦٧٨٩';
+const toArabicDigits = (n: number) => String(n).replace(/\d/g, (d) => ARABIC_DIGITS[Number(d)]);
+
+type KfgRow = { sura_no: number; aya_no: number; jozz: number; aya_text: string };
+const kfg = JSON.parse(readKfg('QaloonData_v10.json')) as KfgRow[];
+const risan = JSON.parse(readKfg('risan-qalun.json')) as Record<string, { verse: number; number_in_hafs: number[] }[]>;
+check(kfg.length === QALUN_TOTAL, `Qalun text has ${kfg.length} ayahs`);
+
+const qSurahs: (Surah & { hafs: [number, number][] })[] = surahs.map((h) => ({ ...h, basmala: null, ayahs: [], hafs: [] }));
+const qJuz: [number, number][] = [];
+let lastJuz = 0;
+for (const row of kfg) {
+  const s = qSurahs[row.sura_no - 1];
+  check(s, `Qalun row has surah ${row.sura_no}`);
+  check(row.aya_no === s.ayahs.length + 1, `Qalun ${row.sura_no}:${row.aya_no} out of order`);
+  const m = row.aya_text.match(/^([\s\S]*?) ([٠-٩]+)$/);
+  check(m && m[2] === toArabicDigits(row.aya_no), `Qalun ${row.sura_no}:${row.aya_no} does not end with its number`);
+  const text = m[1].replace(/ /g, ' ').replace(/ {2,}/g, ' ').trim();
+  check(text.length > 0 && !/[\s]{2}/.test(text), `Qalun ${row.sura_no}:${row.aya_no} has irregular spacing`);
+  s.ayahs.push(text);
+  if (row.jozz !== lastJuz) {
+    check(row.jozz === lastJuz + 1, `Qalun juz ${row.jozz} out of order`);
+    qJuz.push([row.sura_no, row.aya_no]);
+    lastJuz = row.jozz;
+  }
+}
+check(qJuz.length === 30, `Qalun text has ${qJuz.length} juz`);
+
+// Hafs range each Qalun ayah covers; together they must cover every Hafs ayah.
+for (const s of qSurahs) {
+  const map = risan[String(s.n)];
+  check(map?.length === s.ayahs.length, `mapping for surah ${s.n} has ${map?.length} ayahs, the Qalun text has ${s.ayahs.length}`);
+  let next = 1;
+  map.forEach((v, j) => {
+    check(v.verse === j + 1, `mapping ${s.n}:${j + 1} out of order`);
+    const h = v.number_in_hafs;
+    const first = h[0];
+    const last = h[h.length - 1];
+    check(h.every((x, k) => k === 0 || x === h[k - 1] + 1), `mapping ${s.n}:${j + 1} is not a run`);
+    check(first === next || first === next - 1, `mapping ${s.n}:${j + 1} leaves a gap`);
+    s.hafs.push([first, last]);
+    next = last + 1;
+  });
+  check(next - 1 === surahs[s.n - 1].ayahs.length, `mapping for surah ${s.n} does not reach the last Hafs ayah`);
+}
+
+// The basmala as printed in the Qalun text itself (An-Naml 30).
+const naml30 = qSurahs[26].ayahs[29];
+const basmalaAt = naml30.indexOf('بِسْمِ');
+check(basmalaAt >= 0, 'Qalun basmala not found in 27:30');
+const qBasmala = naml30.slice(basmalaAt);
+check(qBasmala.split(' ').length === 4, `Qalun basmala looks wrong: ${qBasmala}`);
+// In Qalun the basmala is not a numbered ayah, so Al-Fatiha gets a header basmala too.
+for (const s of qSurahs) s.basmala = s.n === 9 ? null : qBasmala;
+
+const qSajdas: [number, number, string][] = [];
+for (const s of qSurahs) {
+  s.ayahs.forEach((text, j) => {
+    const count = text.split(SAJDAH_SIGN).length - 1;
+    check(count <= 1, `Qalun ${s.n}:${j + 1} has ${count} sajdah signs`);
+    if (count === 1) qSajdas.push([s.n, j + 1, 'recommended']);
+  });
+}
+check(qSajdas.length === 11, `Qalun text has ${qSajdas.length} sajdah signs`);
+
+const qalunData = {
+  source: {
+    name: 'مجمع الملك فهد لطباعة المصحف الشريف',
+    url: 'https://qurancomplex.gov.sa/techquran/dev/',
+    text: 'KFGQPC Qaloon Uthmanic Data v10 (2021-08-08), via github.com/thetruetruth/quran-data-kfgqpc',
+    mapping: 'Hafs ayah mapping from github.com/risan/quran-json (Quranpedia), CC BY-SA 4.0',
+    sha256: QALUN_PINNED,
+  },
+  surahs: qSurahs,
+  juz: qJuz,
+  sajdas: qSajdas,
+};
+const qalunOutFile = path.join(root, 'assets', 'data', 'quran-qalun.json');
+writeFileSync(qalunOutFile, JSON.stringify(qalunData));
+console.log(
+  `✓ Qalun: ${kfg.length} ayahs, ${qJuz.length} juz, ${qSajdas.length} sajdah positions → ${path.relative(root, qalunOutFile)} (${Math.round(Buffer.byteLength(JSON.stringify(qalunData)) / 1024)} KB)`,
+);
+
 const kb = Math.round(Buffer.byteLength(JSON.stringify(data)) / 1024);
 console.log(`✓ ${surahs.length} surahs, ${ayahTotal} ayahs, ${juz.length} juz, ${sajdas.length} sajdah positions`);
 for (const [form, list] of basmalaForms) {

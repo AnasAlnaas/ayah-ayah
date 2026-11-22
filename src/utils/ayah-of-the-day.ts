@@ -1,4 +1,4 @@
-import { quran } from '@/data/quran';
+import { quranText } from '@/data/quran';
 
 import { visualLength } from './split-ayah';
 
@@ -7,7 +7,7 @@ let candidates: { s: number; a: number }[] | null = null;
 function pool() {
   if (!candidates) {
     candidates = [];
-    for (const surah of quran.surahs) {
+    for (const surah of quranText().surahs) {
       surah.ayahs.forEach((text, i) => {
         const len = visualLength(text);
         if (len >= 45 && len <= 180) candidates!.push({ s: surah.n, a: i + 1 });

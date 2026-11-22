@@ -1,4 +1,4 @@
-import { getSurah, quran } from '@/data/quran';
+import { getSurah, hafsQuran as quran } from '@/data/quran';
 
 import { estimateTextHeight, partsNeeded, splitAyah, visualLength } from './split-ayah';
 

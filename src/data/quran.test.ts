@@ -2,12 +2,12 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { getSurah, globalAyahIndex, isSajda, juzOf, quran, SURAH_COUNT, TOTAL_AYAHS } from './quran';
+import { getSurah, globalAyahIndex, isSajda, juzOf, hafsQuran as quran, SURAH_COUNT, totalAyahs } from './quran';
 
 describe('bundled Qur\'an data', () => {
   it('has every surah and ayah', () => {
     expect(SURAH_COUNT).toBe(114);
-    expect(TOTAL_AYAHS).toBe(6236);
+    expect(totalAyahs()).toBe(6236);
     expect(quran.surahs.map((s) => s.n)).toEqual(Array.from({ length: 114 }, (_, i) => i + 1));
   });
 

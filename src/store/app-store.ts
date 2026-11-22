@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { clampPosition } from '@/data/quran';
+import { clampPosition, convertAyah, type Riwayah, setActiveRiwayah } from '@/data/quran';
 import type { Position } from '@/feed/build-feed';
 import type { Numerals } from '@/utils/arabic';
 import { dayNumber, type DayLog, pruneLog } from '@/utils/streak';
@@ -18,6 +18,8 @@ type Persisted = {
   numerals: Numerals;
   keepAwake: boolean;
   haptics: boolean;
+  /** Which riwayah the mushaf text follows. Position and bookmarks use its numbering. */
+  riwayah: Riwayah;
   /** Where the reader last stopped */
   position: Position;
   /** The swipe hint disappears after the first swipe, for good */
@@ -49,6 +51,8 @@ type Actions = {
   removeBookmark: (s: number, a: number) => void;
   /** Counts an ayah as read today (once per day). Returns true when this read completes the goal. */
   recordRead: (globalIndex: number) => boolean;
+  /** Switches the text and moves the position and bookmarks to the new numbering. */
+  setRiwayah: (riwayah: Riwayah) => void;
 };
 
 export type AppState = Persisted & Transient & Actions;
@@ -59,6 +63,7 @@ export const DEFAULTS: Persisted = {
   numerals: 'arabic',
   keepAwake: true,
   haptics: true,
+  riwayah: 'hafs',
   position: { s: 1, a: 0 },
   hintSeen: false,
   bookmarks: [],
@@ -103,17 +108,39 @@ export const useAppStore = create<AppState>()(
         });
         return count === dailyGoal;
       },
+      setRiwayah: (riwayah) => {
+        const { riwayah: from, position, bookmarks, readToday } = get();
+        if (riwayah === from) return;
+        const move = (s: number, a: number) => ({ s, a: convertAyah(s, a, from, riwayah) });
+        const today = readToday.ayahs.length;
+        setActiveRiwayah(riwayah);
+        const seen = new Set<number>();
+        const moved = bookmarks
+          .map((b) => ({ ...b, ...move(b.s, b.a) }))
+          .filter((b) => !seen.has(b.s * 1000 + b.a) && seen.add(b.s * 1000 + b.a));
+        set({
+          riwayah,
+          position: move(position.s, position.a),
+          bookmarks: moved,
+          // Today's count is kept; the ayahs already counted can't be matched one to one, so
+          // they are dropped and only the count carries over.
+          readToday: { day: readToday.day, ayahs: Array.from({ length: today }, (_, i) => -1 - i) },
+          jump: null,
+          tafsirOpen: false,
+        });
+      },
     }),
     {
       name: 'ayah-ayah',
       version: 1,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ fontScale, theme, numerals, keepAwake, haptics, position, hintSeen, bookmarks, dailyGoal, readLog, readToday }) => ({
+      partialize: ({ fontScale, theme, numerals, keepAwake, haptics, riwayah, position, hintSeen, bookmarks, dailyGoal, readLog, readToday }) => ({
         fontScale,
         theme,
         numerals,
         keepAwake,
         haptics,
+        riwayah,
         position,
         hintSeen,
         bookmarks,
@@ -123,6 +150,8 @@ export const useAppStore = create<AppState>()(
       }),
       merge: (saved, current) => {
         const state = { ...current, ...(saved as Partial<Persisted>) };
+        state.riwayah = state.riwayah === 'qalun' ? 'qalun' : 'hafs';
+        setActiveRiwayah(state.riwayah);
         state.position = clampPosition(state.position?.s ?? 1, state.position?.a ?? 0);
         state.bookmarks = Array.isArray(state.bookmarks) ? state.bookmarks : [];
         return state;

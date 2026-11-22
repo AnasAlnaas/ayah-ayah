@@ -1,4 +1,4 @@
-import { getSurah, globalAyahIndex, quran, TOTAL_AYAHS } from '@/data/quran';
+import { getSurah, globalAyahIndex, quranText, totalAyahs } from '@/data/quran';
 
 export type HeaderItem = { kind: 'header'; key: string; s: number };
 export type AyahItem = {
@@ -34,9 +34,9 @@ export function buildFeed(split: (text: string) => string[] = (t) => [t]): Feed 
   const items: FeedItem[] = [];
   const headerIndex: number[] = [0];
   const surahCards: number[] = [0];
-  const ayahIndex = new Int32Array(TOTAL_AYAHS);
+  const ayahIndex = new Int32Array(totalAyahs());
 
-  for (const surah of quran.surahs) {
+  for (const surah of quranText().surahs) {
     const s = surah.n;
     headerIndex[s] = items.length;
     items.push({ kind: 'header', key: `${s}`, s });
