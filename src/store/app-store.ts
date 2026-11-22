@@ -22,6 +22,8 @@ type Persisted = {
   riwayah: Riwayah;
   /** Where the reader last stopped */
   position: Position;
+  /** False until the first-run welcome sheet is dismissed */
+  onboarded: boolean;
   /** The swipe hint disappears after the first swipe, for good */
   hintSeen: boolean;
   /** Newest first */
@@ -63,8 +65,9 @@ export const DEFAULTS: Persisted = {
   numerals: 'arabic',
   keepAwake: true,
   haptics: true,
-  riwayah: 'hafs',
+  riwayah: 'qalun',
   position: { s: 1, a: 0 },
+  onboarded: false,
   hintSeen: false,
   bookmarks: [],
   dailyGoal: 20,
@@ -134,7 +137,7 @@ export const useAppStore = create<AppState>()(
       name: 'ayah-ayah',
       version: 1,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ fontScale, theme, numerals, keepAwake, haptics, riwayah, position, hintSeen, bookmarks, dailyGoal, readLog, readToday }) => ({
+      partialize: ({ fontScale, theme, numerals, keepAwake, haptics, riwayah, position, onboarded, hintSeen, bookmarks, dailyGoal, readLog, readToday }) => ({
         fontScale,
         theme,
         numerals,
@@ -142,6 +145,7 @@ export const useAppStore = create<AppState>()(
         haptics,
         riwayah,
         position,
+        onboarded,
         hintSeen,
         bookmarks,
         dailyGoal,
@@ -149,8 +153,13 @@ export const useAppStore = create<AppState>()(
         readToday,
       }),
       merge: (saved, current) => {
-        const state = { ...current, ...(saved as Partial<Persisted>) };
-        state.riwayah = state.riwayah === 'qalun' ? 'qalun' : 'hafs';
+        const old = saved as Partial<Persisted> | undefined;
+        const state = { ...current, ...old };
+        // Installs from before these settings existed were reading Hafs and have seen the app,
+        // so they keep Hafs and skip the welcome sheet. New installs get Qalun and the sheet.
+        if (old && old.riwayah === undefined) state.riwayah = 'hafs';
+        if (old && old.onboarded === undefined) state.onboarded = true;
+        state.riwayah = state.riwayah === 'hafs' ? 'hafs' : 'qalun';
         setActiveRiwayah(state.riwayah);
         state.position = clampPosition(state.position?.s ?? 1, state.position?.a ?? 0);
         state.bookmarks = Array.isArray(state.bookmarks) ? state.bookmarks : [];
@@ -159,6 +168,8 @@ export const useAppStore = create<AppState>()(
     },
   ),
 );
+
+setActiveRiwayah(DEFAULTS.riwayah);
 
 export function bookmarkKey(s: number, a: number): number {
   return s * 1000 + a;

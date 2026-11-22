@@ -11,7 +11,7 @@ import { AYAH_FONT_SIZE, AYAH_LINE_HEIGHT, FONT_SCALES, fonts, useTheme, quranFo
 import { formatNumber } from '@/utils/arabic';
 import { ALIGN_START, ROW } from '@/utils/rtl';
 
-const GOALS = [5, 10, 20, 50, 100];
+export const GOALS = [5, 10, 20, 50, 100];
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const palette = useTheme();
